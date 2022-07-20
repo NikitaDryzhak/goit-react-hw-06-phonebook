@@ -1,9 +1,7 @@
 import React from 'react';
 import s from './ContactForm.module.css';
 import { nanoid } from 'nanoid';
-import PropTypes from 'prop-types';
-// import { connect } from 'react-redux';
-import contactActions from '../../redux/actions';
+import { addContact } from '../../redux/actions';
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { getContacts } from '../../redux/selectors';
@@ -30,7 +28,7 @@ export default function Form() {
       contacts.some(contact => contact.number.includes(params.number))
     ) {
       Notiflix.Notify.failure(`Number ${params.number} is already exist`);
-    } else dispatch(contactActions.addContact(params));
+    } else dispatch(addContact(params));
     setParams({ id: nanoid(10), name: '', number: '' });
   };
 
