@@ -1,12 +1,22 @@
-import React, { useState } from 'react';
+import React from 'react';
 import s from './ContactForm.module.css';
 import { nanoid } from 'nanoid';
 import PropTypes from 'prop-types';
+// import { connect } from 'react-redux';
+import contactActions from '../../redux/actions';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { getContacts } from '../../redux/selectors';
+import Notiflix from 'notiflix';
 
-function Form({ onSubmit }) {
-  const [params, setParams] = useState({ name: '', number: '' });
-
-  const nameId = nanoid(10);
+export default function Form() {
+  const [params, setParams] = useState({
+    id: nanoid(10),
+    name: '',
+    number: '',
+  });
+  const contacts = useSelector(getContacts);
+  const dispatch = useDispatch();
 
   const handleInputChange = e => {
     setParams({ ...params, [e.currentTarget.name]: e.currentTarget.value });
@@ -14,25 +24,24 @@ function Form({ onSubmit }) {
 
   const handleSubmit = e => {
     e.preventDefault();
-    const { name, number } = params;
-
-    onSubmit({ id: nanoid(5), name, number });
-    reset();
-  };
-
-  const reset = () => {
-    setParams({ name: '', number: '' });
+    if (contacts.some(contact => contact.name.includes(params.name))) {
+      Notiflix.Notify.failure(`Contact ${params.name} is already exist`);
+    } else if (
+      contacts.some(contact => contact.number.includes(params.number))
+    ) {
+      Notiflix.Notify.failure(`Number ${params.number} is already exist`);
+    } else dispatch(contactActions.addContact(params));
+    setParams({ id: nanoid(10), name: '', number: '' });
   };
 
   return (
     <form onSubmit={handleSubmit} className={s.form}>
-      <label htmlFor={nameId} className={s.label}>
+      <label className={s.label}>
         {' '}
         Name
         <input
           className={s.input}
           onChange={handleInputChange}
-          id={nameId}
           value={params.name}
           type="text"
           name="name"
@@ -58,9 +67,3 @@ function Form({ onSubmit }) {
     </form>
   );
 }
-
-export default Form;
-
-Form.propTypes = {
-  onSubmit: PropTypes.func.isRequired,
-};
